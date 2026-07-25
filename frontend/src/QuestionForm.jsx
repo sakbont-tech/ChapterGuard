@@ -5,6 +5,7 @@ function QuestionForm(){
     const [bookTitle, setBookTitle] = useState("");
     const [bookChapter, setBookChapter] = useState("");
     const [bookQuestion, setBookQuestion] = useState("");
+    const [answer, setAnswer] = useState("");
 
     const handleBookTitleChange = (event) =>{
         setBookTitle(event.target.value);
@@ -18,12 +19,26 @@ function QuestionForm(){
         setBookQuestion(event.target.value);
     };
 
+    const handleSubmit = (event) =>{
+        event.preventDefault();
+
+        let chapterNumber = Number(bookChapter);
+
+        console.log({
+            title: bookTitle,
+            chapter: chapterNumber,
+            question: bookQuestion
+        });
+
+        setAnswer("Spoiler Free Zone");
+    }
+
     return(
         <div className="Question-Form-Container">
-            <form>
+            <form onSubmit={handleSubmit}>
 
                 <label htmlFor="book-title">Book title</label>
-                <input id='Book-Title' 
+                <input id='book-title' 
                        type='text' 
                        value={bookTitle} 
                        onChange={handleBookTitleChange}
@@ -32,7 +47,7 @@ function QuestionForm(){
                 />
 
                 <label htmlFor="book-chapter">Current chapter</label>
-                <input id='Book-Chapter' 
+                <input id='book-chapter' 
                        type='number' 
                        value={bookChapter} 
                        onChange={handleBookChapterChange}
@@ -41,14 +56,20 @@ function QuestionForm(){
                 />
 
                 <label htmlFor="book-question">Question</label>
-                <textarea id='Book-Question' 
+                <textarea id='book-question' 
                        type='text' 
                        value={bookQuestion} 
                        onChange={handleBookQuestionChange}
                        required
                 />
+
+                <button type='submit'>Submit</button>
             </form>
+
+            {answer && <p>{answer}</p>}
         </div>
+
+
     );
 
 }
