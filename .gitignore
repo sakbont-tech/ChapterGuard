@@ -1,0 +1,11 @@
+# React
+node_modules/
+dist/
+
+# Secrets
+.env
+
+# FastAPI/Python later
+.venv/
+__pycache__/
+*.pyc
