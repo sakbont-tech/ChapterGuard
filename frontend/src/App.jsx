@@ -1,14 +1,12 @@
-import { useState } from 'react'
-import QuestionForm from './QuestionForm'
-
+import QuestionForm from './QuestionForm';
 
 function App() {
-  return(
+  return (
     <>
       <h1>ChapterGuard</h1>
-      <QuestionForm></QuestionForm>
+      <QuestionForm />
     </>
   );
 }
 
-export default App
+export default App;
