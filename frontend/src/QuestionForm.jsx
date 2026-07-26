@@ -7,6 +7,7 @@ function QuestionForm(){
     const [bookChapter, setBookChapter] = useState("");
     const [bookQuestion, setBookQuestion] = useState("");
     const [answer, setAnswer] = useState("");
+    const [loadingState, setLoadingState] = useState(false);
 
     const handleBookTitleChange = (event) =>{
         setBookTitle(event.target.value);
@@ -31,8 +32,13 @@ function QuestionForm(){
             question: bookQuestion
         });
 
-        setAnswer("Spoiler Free Zone");
-    }
+        setLoadingState(true);
+
+        setTimeout(() => {
+            setLoadingState(false);
+            setAnswer("Spoiler Free Zone");
+        }, 2000);
+    };
 
     return(
         <div className="Question-Form-Container">
@@ -66,11 +72,10 @@ function QuestionForm(){
                 <button type='submit'>Submit</button>
             </form>
 
-            {answer && <AnswerCard answer={answer}/>}
+            {loadingState && <p>Loading answer...</p>}
+            {!loadingState && answer && <AnswerCard answer={answer}/>}
         </div>
-
-
     );
-
 }
+
 export default QuestionForm
