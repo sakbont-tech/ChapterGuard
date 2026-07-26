@@ -1,4 +1,5 @@
 import {useState} from 'react';
+import AnswerCard from './AnswerCard';
 
 function QuestionForm(){
 
@@ -22,7 +23,7 @@ function QuestionForm(){
     const handleSubmit = (event) =>{
         event.preventDefault();
 
-        let chapterNumber = Number(bookChapter);
+        const chapterNumber = Number(bookChapter);
 
         console.log({
             title: bookTitle,
@@ -57,7 +58,6 @@ function QuestionForm(){
 
                 <label htmlFor="book-question">Question</label>
                 <textarea id='book-question' 
-                       type='text' 
                        value={bookQuestion} 
                        onChange={handleBookQuestionChange}
                        required
@@ -66,7 +66,7 @@ function QuestionForm(){
                 <button type='submit'>Submit</button>
             </form>
 
-            {answer && <p>{answer}</p>}
+            {answer && <AnswerCard answer={answer}/>}
         </div>
 
 
