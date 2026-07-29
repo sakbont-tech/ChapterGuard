@@ -1,4 +1,5 @@
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from schemas import AskRequest, AskResponse
 from database import Request, get_async_session, create_db_and_tables
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -10,6 +11,12 @@ async def lifespan(app: FastAPI):
     yield
 
 app = FastAPI(lifespan=lifespan)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:5173"],
+    allow_methods=["*"]
+)
 
 book_requests = {
     1: {
