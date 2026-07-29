@@ -1,6 +1,8 @@
-import { useState } from 'react';
+import { useState} from 'react';
 import AnswerCard from './AnswerCard';
 import ReadingStatus from './ReadingStatus';
+
+let BASEURL = "http://localhost:8000/ask";
 
 function QuestionForm() {
   const [bookTitle, setBookTitle] = useState('');
@@ -10,7 +12,7 @@ function QuestionForm() {
   const [state, setState] = useState('');
   const [submittedBook, setSubmittedBook] = useState(null);
 
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault();
 
     const chapterNumber = Number(bookChapter);
@@ -23,10 +25,23 @@ function QuestionForm() {
     setSubmittedBook(book);
     setState('Loading');
 
-    setTimeout(() => {
-      setState('Answering');
-      setAnswer('Spoiler Free Zone');
-    }, 2000);
+    try{
+      const response = await fetch(`${BASEURL}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json'},
+        body: JSON.stringify(book)
+      });
+
+        if(!response.ok){
+          throw new Error(`HTTP error! Status: ${response.status}`);
+        }   
+        const data = await response.json();
+        setAnswer(data.response);
+        setState("Answering");
+      }
+        catch(error){
+          console.log(error);
+        }
   };
 
   return (
