@@ -1,11 +1,12 @@
 from pydantic import BaseModel
 
 class AskRequest(BaseModel):
-    book: str
+    title: str
     chapter: int
     question: str
 
 class AskResponse(BaseModel):
-    book: str
+    title: str
     chapter: int
     question: str
+    response: str
