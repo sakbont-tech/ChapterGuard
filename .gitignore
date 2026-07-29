@@ -9,7 +9,7 @@ dist-ssr/
 
 # Python / virtual environments
 .venv/
-venv/
+env/
 __pycache__/
 *.pyc
 
