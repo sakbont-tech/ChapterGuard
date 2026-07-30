@@ -9,6 +9,7 @@ function QuestionForm() {
   const [bookChapter, setBookChapter] = useState('');
   const [bookQuestion, setBookQuestion] = useState('');
   const [answer, setAnswer] = useState('');
+  const [error, setError] = useState(null);
   const [state, setState] = useState('');
   const [submittedBook, setSubmittedBook] = useState(null);
 
@@ -40,7 +41,9 @@ function QuestionForm() {
         setState("Answering");
       }
         catch(error){
-          console.log(error);
+          setError(error.message);
+          console.log(error.message);
+          setState("Error");
         }
   };
 
@@ -89,7 +92,8 @@ function QuestionForm() {
         </button>
       </form>
 
-      {state === 'Loading' && <p>Loading answer...</p>}
+      {state === "Error" && error && <p className='error-message'>{error}</p>}
+      {state === 'Loading' && <p className='loading-message'> Loading answer...</p>}
       {submittedBook && (
         <ReadingStatus
           bookTitle={submittedBook.title}
