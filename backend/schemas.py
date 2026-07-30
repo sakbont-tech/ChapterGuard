@@ -1,8 +1,8 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 class AskRequest(BaseModel):
     title: str
-    chapter: int
+    chapter: int = Field(ge=1)
     question: str
 
 class AskResponse(BaseModel):
