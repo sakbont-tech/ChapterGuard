@@ -1,8 +1,8 @@
-import { useState} from 'react';
+import { useState } from 'react';
 import AnswerCard from './AnswerCard';
 import ReadingStatus from './ReadingStatus';
 
-let BASEURL = "http://localhost:8000/ask";
+const BASEURL = 'http://localhost:8000/ask';
 
 function QuestionForm() {
   const [bookTitle, setBookTitle] = useState('');
@@ -10,11 +10,16 @@ function QuestionForm() {
   const [bookQuestion, setBookQuestion] = useState('');
   const [answer, setAnswer] = useState('');
   const [error, setError] = useState(null);
-  const [state, setState] = useState('');
+  const [status, setStatus] = useState('idle');
   const [submittedBook, setSubmittedBook] = useState(null);
 
+  
   const handleSubmit = async (event) => {
     event.preventDefault();
+
+    setError(null);
+    setAnswer('');
+    setStatus('Loading');
 
     const chapterNumber = Number(bookChapter);
     const book = {
@@ -23,27 +28,26 @@ function QuestionForm() {
       question: bookQuestion,
     };
 
-    setSubmittedBook(book);
-    setState('Loading');
-
-    try{
-      const response = await fetch(`${BASEURL}`, {
+    try {
+      const response = await fetch(BASEURL, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json'},
-        body: JSON.stringify(book)
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(book),
       });
 
-        if(!response.ok){
-          throw new Error(`HTTP error! Status: ${response.status}`);
-        }   
+      if (!response.ok) {
+        throw new Error(`HTTP error! Status: ${response.status}`);
+      }
+
         const data = await response.json();
+        setSubmittedBook(book);
         setAnswer(data.response);
-        setState("Answering");
+        setStatus("Success");
       }
         catch(error){
           setError(error.message);
           console.log(error.message);
-          setState("Error");
+          setStatus("Error");
         }
   };
 
@@ -87,20 +91,20 @@ function QuestionForm() {
           required
         />
 
-        <button className="form-button" type="submit">
+        <button className="form-button" type="submit" disabled={status === "Loading"}>
           Submit
         </button>
       </form>
 
-      {state === "Error" && error && <p className='error-message'>{error}</p>}
-      {state === 'Loading' && <p className='loading-message'> Loading answer...</p>}
+      {status === "Error" && error && <p className='error-message'>{error}</p>}
+      {status === 'Loading' && <p className='loading-message'> Loading answer...</p>}
       {submittedBook && (
         <ReadingStatus
           bookTitle={submittedBook.title}
           currentChapter={submittedBook.chapter}
         />
       )}
-      {state === 'Answering' && answer && <AnswerCard answer={answer} />}
+      {status === 'Success' && answer && <AnswerCard answer={answer} />}
     </div>
   );
 }
