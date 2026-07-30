@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from schemas import AskRequest, AskResponse
-from database import Request, get_async_session, create_db_and_tables
+from backend.schemas import AskRequest, AskResponse
+from backend.database import Request, get_async_session, create_db_and_tables
 from sqlalchemy.ext.asyncio import AsyncSession
 from contextlib import asynccontextmanager
 
