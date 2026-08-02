@@ -24,3 +24,6 @@ debug.log
 # Databases
 test.db
 *.db
+
+#Chapter Files
+backend/data/books/*/chapters/*.txt
