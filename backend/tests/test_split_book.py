@@ -40,3 +40,26 @@ def test_extract_chapters():
     assert len(test_list) == 3
     assert test_list[0] == ("Chapter 1. Marseilles—The Arrival\n"
     "On the 24th of February, 1815, the story begins.\n")
+
+def test_write_chapters(tmp_path):
+    # Arrange
+    chapter_list = [
+        "Chapter 1. First\nThis is chapter one.",
+        "Chapter 2. Second\nThis is chapter two.",
+    ]
+    chapter_folder = tmp_path / "chapters"
+
+    # Act
+    write_chapters(chapter_list, chapter_folder)
+
+    # Assert
+    chapter_one = chapter_folder / "chapter_001.txt"
+    chapter_two = chapter_folder / "chapter_002.txt"
+
+    assert chapter_one.exists()
+    assert chapter_two.exists()
+
+    assert chapter_one.read_text(encoding="utf-8") == chapter_list[0]
+    assert chapter_two.read_text(encoding="utf-8") == chapter_list[1]
+
+    assert len(list(chapter_folder.iterdir())) == 2
