@@ -12,18 +12,18 @@ def test_remove_table_of_contents():
     heading = "Chapter 1. Marseilles—The Arrival"
 
     content = (
-        f"{heading}\n"
+        "Chapter 1. Marseilles—The Arrival\n"
         "Chapter 2. Father and Son\n"
         "Chapter 3. The Catalans\n"
         "Chapter 4. Conspiracy\n"
         "\n"
-        f"{heading}\n"
+        "Chapter 1. Marseilles—The Arrival\n"
         "On the 24th of February, 1815, the story begins."
     )
 
     result = remove_table_of_contents(content)
 
     assert result == (
-        f"{heading}\n"
+        "Chapter 1. Marseilles—The Arrival\n"
         "On the 24th of February, 1815, the story begins."
     )
