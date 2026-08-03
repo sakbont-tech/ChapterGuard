@@ -35,7 +35,7 @@ def extract_chapters(book_onward, total_chapters):
 def write_chapters(chapter_list, chapter_folder_path):
     chapter_folder_path.mkdir(parents=True, exist_ok=True)
     for chapter_number, chapter in enumerate(chapter_list, start=1):
-        chapter_path = chapter_folder_path / f"chapter_{chapter_number}.txt"
+        chapter_path = chapter_folder_path / f"chapter_{chapter_number:03}.txt"
         chapter_path.write_text(chapter, encoding="utf-8")
         print(f"Created {chapter_path.name}")
 
