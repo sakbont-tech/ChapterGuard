@@ -18,7 +18,7 @@ def remove_table_of_contents(content):
     book_onward = content[second_occurrence:]
     return book_onward
 
-def extract_chapters(book_onward):
+def extract_chapters(book_onward, total_chapters):
     chapter_list = []
 
     for i in range(1, total_chapters + 1):
