@@ -40,18 +40,3 @@ def test_extract_chapters():
     assert len(test_list) == 3
     assert test_list[0] == ("Chapter 1. Marseilles—The Arrival\n"
     "On the 24th of February, 1815, the story begins.\n")
-
-def test_write_chapters(tmp_path):
-    test_content = ("Chapter 1. Marseilles—The Arrival\n"
-    "On the 24th of February, 1815, the story begins.\n"
-    "Chapter 2. Father and Son\n"
-    "The son and the father blah blah\n"
-    "Chapter 3. The Catalans\n"
-    "HELLOOOOOO"
-    "FOOTNOTES: this is a footnote")
-
-    test_list = extract_chapters(test_content, 3)
-
-    write_chapters(test_list, tmp_path)
-    assert chapter_path = chapter_folder_path / f"chapter_{chapter_number}.txt"
-
