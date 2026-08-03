@@ -1,7 +1,15 @@
 from pathlib import Path
 
-file_path = Path(r"backend\data\books\count_of_monte_cristo\raw.txt")
-chapter_folder_path = Path(r"backend\data\books\count_of_monte_cristo\chapters")
+backend_path = Path(__file__).resolve().parent.parent
+book_path = (
+    backend_path
+    / "data"
+    / "books"
+    / "count_of_monte_cristo"
+)
+
+raw_path = book_path / "raw.txt"
+chapter_folder_path = book_path / "chapters"
 total_chapters = 117
 
 def read_book(file_path):
@@ -11,12 +19,14 @@ def read_book(file_path):
     return content
 
 def remove_table_of_contents(content):
-    first_occurrence = content.find("Chapter 1. Marseilles—The Arrival")
+    heading = "Chapter 1. Marseilles—The Arrival"
+
+    first_occurrence = content.find(heading)
 
     if first_occurrence == -1:
         raise ValueError("The first Chapter 1 heading was not found.")
     
-    second_occurrence = content.find("Chapter 1. Marseilles—The Arrival", first_occurrence + 1)
+    second_occurrence = content.find(heading, first_occurrence + len(heading))
 
     if second_occurrence == -1:
         raise ValueError("The second Chapter 1 heading was not found.")
@@ -54,7 +64,7 @@ def write_chapters(chapter_list, chapter_folder_path):
         print(f"Created {chapter_path.name}")
 
 def main():
-    content = read_book(file_path)
+    content = read_book(raw_path)
     book_onward = remove_table_of_contents(content)
     chapter_list = extract_chapters(book_onward, total_chapters)
     write_chapters(chapter_list, chapter_folder_path)
