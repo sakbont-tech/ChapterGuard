@@ -1,0 +1,9 @@
+{
+    "id" : "count_of_monte_cristo",
+    "title" : "The Count of Monte Cristo",
+    "author" : "Alexandre Dumas",
+    "language" : "English",
+    "total_chapters" : 117,
+    "chapters_directory" : "chapters",
+    "source_url": "https://www.gutenberg.org/cache/epub/1184/pg1184.txt"
+}
