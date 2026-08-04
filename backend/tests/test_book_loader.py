@@ -22,14 +22,6 @@ def test_load_metadata(tmp_path):
     assert metadata_dict == test_metadata_data
 
 def test_validate_metadata():
-    test_metadata_data = {
-        "id" : "GOT",
-        "title" : "A Game of Thrones",
-        "author" : "George RR Martin",
-        "language" : "English",
-        "total_chapters" : 57,
-        "chapters_directory" : "chapters",
-    }
 
     correct_test_metadata = {
         "id" : "GOT",
@@ -41,7 +33,17 @@ def test_validate_metadata():
         "source_url": "https://example.com/test-book.txt"   
     }
 
+    assert validate_metadata(correct_test_metadata) is None
+
+def test_validate_missing_metadata():
+    test_metadata_data = {
+        "id" : "GOT",
+        "title" : "A Game of Thrones",
+        "author" : "George RR Martin",
+        "language" : "English",
+        "total_chapters" : 57,
+        "chapters_directory" : "chapters",
+    }
+        
     with pytest.raises(ValueError):
         validate_metadata(test_metadata_data)
-
-    assert validate_metadata(correct_test_metadata) is None
