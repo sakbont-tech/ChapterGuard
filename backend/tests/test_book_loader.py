@@ -7,9 +7,9 @@ def test_load_metadata(tmp_path):
         "title" : "A Game of Thrones",
         "author" : "George RR Martin",
         "language" : "English",
-        "total chapters" : 57,
-        "chapters directory" : "chapters",
-        "source_url": "https://www.gutenberg.org/cache/epub/1184/pg1184.txt"
+        "total_chapters" : 57,
+        "chapters_directory" : "chapters",
+        "source_url": "https://example.com/test-book.txt"    
     }
 
     test_metadata = tmp_path / "test_metadata.json"
