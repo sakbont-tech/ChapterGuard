@@ -4,6 +4,10 @@ from pathlib import Path
 def load_metadata(metadata_path: Path):
     with open(metadata_path, "r", encoding="utf-8") as file:
         metadata = json.load(file)
+
+    if not isinstance(metadata, dict):
+        raise TypeError("Metadata must be a JSON object")
+
     return metadata
 
 def validate_metadata(metadata):
@@ -23,3 +27,5 @@ def validate_metadata(metadata):
         raise ValueError(
             f"Missing required metadata fields: {sorted(missing_fields)}"
         )
+
+    

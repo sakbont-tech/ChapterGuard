@@ -35,7 +35,7 @@ def test_validate_metadata():
 
     assert validate_metadata(correct_test_metadata) is None
 
-def test_validate_missing_metadata():
+def test_missing_metadata():
     test_metadata_data = {
         "id" : "GOT",
         "title" : "A Game of Thrones",
