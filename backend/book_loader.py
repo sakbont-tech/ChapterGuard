@@ -81,3 +81,15 @@ def load_chapter(book_directory, metadata, chapter_number):
     with open(chapter_path, "r", encoding="utf-8") as file:
         chapter = file.read()
     return chapter
+
+def load_chapters_up_to(book_directory, metadata, chapter_until):
+    if not 1 <= chapter_until <= metadata["total_chapters"]:
+        raise ValueError(f"{chapter_until} is out of bounds")
+
+    chapters = []
+
+    for chapter_number in range(1, chapter_until + 1):
+        chapter = load_chapter(book_directory, metadata, chapter_number)
+    chapters.append(chapter)
+
+    return "\n\n".join(chapters)
