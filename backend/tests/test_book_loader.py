@@ -1,4 +1,4 @@
-from backend.book_loader import load_metadata, validate_metadata
+from backend.book_loader import load_metadata, validate_metadata, load_chapter
 import json
 import pytest
 
@@ -131,3 +131,38 @@ def test_invalid_chapters_directory():
 
     with pytest.raises(ValueError):
         validate_metadata(test_metadata_data)
+
+def test_load_chapter(tmp_path):
+    test_metadata_data = {
+        "id" : "got",
+        "title" : "A Game of Thrones",
+        "author" : "George RR Martin",
+        "language" : "English",
+        "total_chapters" : 57,
+        "chapters_directory" : "chapters",
+        "source_url": "https://example.com/test-book.txt"    
+    }
+
+    chapters_directory = tmp_path / "chapters"
+    chapters_directory.mkdir()
+
+    test_file = chapters_directory / f"{3:03}.txt"
+    test_file.write_text("This is Chapter 3!")
+
+    chapter = load_chapter(tmp_path, test_metadata_data, 3)
+
+    assert chapter == "This is Chapter 3!"
+
+def test_load_chapter_invalid_chapter(tmp_path):
+    test_metadata_data = {
+        "id" : "got",
+        "title" : "A Game of Thrones",
+        "author" : "George RR Martin",
+        "language" : "English",
+        "total_chapters" : 57,
+        "chapters_directory" : "chapters",
+        "source_url": "https://example.com/test-book.txt"    
+    }
+
+    with pytest.raises(ValueError):
+        load_chapter(tmp_path, test_metadata_data, 99)
