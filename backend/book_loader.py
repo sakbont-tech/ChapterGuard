@@ -90,6 +90,6 @@ def load_chapters_up_to(book_directory, metadata, chapter_until):
 
     for chapter_number in range(1, chapter_until + 1):
         chapter = load_chapter(book_directory, metadata, chapter_number)
-    chapters.append(chapter)
+        chapters.append(chapter)
 
     return "\n\n".join(chapters)
