@@ -76,7 +76,7 @@ def load_chapter(book_directory, metadata, chapter_number):
     if not (1 <= chapter_number <= metadata["total_chapters"]):
         raise ValueError(f"{chapter_number} is out of bounds")
 
-    chapter_path = book_directory / metadata["chapters_directory"] / f"{chapter_number:03}.txt"
+    chapter_path = book_directory / metadata["chapters_directory"] / f"chapter_{chapter_number:03}.txt"
 
     with open(chapter_path, "r", encoding="utf-8") as file:
         chapter = file.read()

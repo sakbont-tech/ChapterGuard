@@ -1,6 +1,7 @@
 from backend.book_loader import load_metadata, validate_metadata, load_chapter, load_chapters_up_to
 import json
 import pytest
+from pathlib import Path
 
 def test_load_metadata(tmp_path):
     test_metadata_data = {
@@ -146,7 +147,7 @@ def test_load_chapter(tmp_path):
     chapters_directory = tmp_path / "chapters"
     chapters_directory.mkdir()
 
-    test_file = chapters_directory / f"{3:03}.txt"
+    test_file = chapters_directory / f"chapter_{3:03}.txt"
     test_file.write_text("This is Chapter 3!")
 
     chapter = load_chapter(tmp_path, test_metadata_data, 3)
@@ -182,7 +183,7 @@ def test_load_chapters_up_to(tmp_path):
     chapters_directory.mkdir()
 
     for chapter_number in range(1, 4):
-        chapter_file = chapters_directory / f"{chapter_number:03}.txt"
+        chapter_file = chapters_directory / f"chapter_{chapter_number:03}.txt"
         chapter_file.write_text(
             f"This is Chapter {chapter_number}!",
             encoding="utf-8",
@@ -195,3 +196,25 @@ def test_load_chapters_up_to(tmp_path):
         "This is Chapter 2!\n\n"
         "This is Chapter 3!"
     )
+
+def test_load_chapters_up_to_with_count_of_monte_cristo():
+    book_directory = (
+        Path(__file__).resolve().parents[1]
+        / "data"
+        / "books"
+        / "count_of_monte_cristo"
+    )
+
+    metadata = load_metadata(book_directory / "metadata.json")
+    validate_metadata(metadata)
+
+    chapters = load_chapters_up_to(
+        book_directory,
+        metadata,
+        3,
+    )
+
+    assert "Chapter 1. Marseilles—The Arrival" in chapters
+    assert "Chapter 2. Father and Son" in chapters
+    assert "Chapter 3. The Catalans" in chapters
+    assert "Chapter 4. Conspiracy" not in chapters
