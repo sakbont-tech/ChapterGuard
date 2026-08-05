@@ -71,3 +71,25 @@ def validate_metadata(metadata):
         raise ValueError(
             "chapters_directory must be a safe relative path"
         )
+
+def load_chapter(book_directory, metadata, chapter_number):
+    if not (1 <= chapter_number <= metadata["total_chapters"]):
+        raise ValueError(f"{chapter_number} is out of bounds")
+
+    chapter_path = book_directory / metadata["chapters_directory"] / f"{chapter_number:03}.txt"
+
+    with open(chapter_path, "r", encoding="utf-8") as file:
+        chapter = file.read()
+    return chapter
+
+def load_chapters_up_to(book_directory, metadata, chapter_until):
+    if not 1 <= chapter_until <= metadata["total_chapters"]:
+        raise ValueError(f"{chapter_until} is out of bounds")
+
+    chapters = []
+
+    for chapter_number in range(1, chapter_until + 1):
+        chapter = load_chapter(book_directory, metadata, chapter_number)
+        chapters.append(chapter)
+
+    return "\n\n".join(chapters)

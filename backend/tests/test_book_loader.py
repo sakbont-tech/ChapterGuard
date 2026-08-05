@@ -1,4 +1,4 @@
-from backend.book_loader import load_metadata, validate_metadata
+from backend.book_loader import load_metadata, validate_metadata, load_chapter, load_chapters_up_to
 import json
 import pytest
 
@@ -131,3 +131,67 @@ def test_invalid_chapters_directory():
 
     with pytest.raises(ValueError):
         validate_metadata(test_metadata_data)
+
+def test_load_chapter(tmp_path):
+    test_metadata_data = {
+        "id" : "got",
+        "title" : "A Game of Thrones",
+        "author" : "George RR Martin",
+        "language" : "English",
+        "total_chapters" : 57,
+        "chapters_directory" : "chapters",
+        "source_url": "https://example.com/test-book.txt"    
+    }
+
+    chapters_directory = tmp_path / "chapters"
+    chapters_directory.mkdir()
+
+    test_file = chapters_directory / f"{3:03}.txt"
+    test_file.write_text("This is Chapter 3!")
+
+    chapter = load_chapter(tmp_path, test_metadata_data, 3)
+
+    assert chapter == "This is Chapter 3!"
+
+def test_load_chapter_invalid_chapter(tmp_path):
+    test_metadata_data = {
+        "id" : "got",
+        "title" : "A Game of Thrones",
+        "author" : "George RR Martin",
+        "language" : "English",
+        "total_chapters" : 57,
+        "chapters_directory" : "chapters",
+        "source_url": "https://example.com/test-book.txt"    
+    }
+
+    with pytest.raises(ValueError):
+        load_chapter(tmp_path, test_metadata_data, 99)
+
+def test_load_chapters_up_to(tmp_path):
+    metadata = {
+        "id": "got",
+        "title": "A Game of Thrones",
+        "author": "George RR Martin",
+        "language": "English",
+        "total_chapters": 57,
+        "chapters_directory": "chapters",
+        "source_url": "https://example.com/test-book.txt",
+    }
+
+    chapters_directory = tmp_path / "chapters"
+    chapters_directory.mkdir()
+
+    for chapter_number in range(1, 4):
+        chapter_file = chapters_directory / f"{chapter_number:03}.txt"
+        chapter_file.write_text(
+            f"This is Chapter {chapter_number}!",
+            encoding="utf-8",
+        )
+
+    chapters = load_chapters_up_to(tmp_path, metadata, 3)
+
+    assert chapters == (
+        "This is Chapter 1!\n\n"
+        "This is Chapter 2!\n\n"
+        "This is Chapter 3!"
+    )
