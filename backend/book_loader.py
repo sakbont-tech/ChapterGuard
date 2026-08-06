@@ -2,6 +2,8 @@ import json
 from pathlib import Path, PurePosixPath, PureWindowsPath
 import re
 
+BOOKS_DIRECTORY = Path(__file__).resolve().parent / "data" / "books"
+
 def load_metadata(metadata_path: Path):
     with open(metadata_path, "r", encoding="utf-8") as file:
         metadata = json.load(file)
@@ -93,3 +95,19 @@ def load_chapters_up_to(book_directory, metadata, chapter_until):
         chapters.append(chapter)
 
     return "\n\n".join(chapters)
+
+def load_book(book_id):   
+    book_directory = BOOKS_DIRECTORY / book_id
+
+    metadata_path = book_directory / "metadata.json"
+    metadata = load_metadata(metadata_path)
+    validate_metadata(metadata)
+
+    return book_directory, metadata
+
+def get_book_context(book_id, chapter_until):
+
+    book_directory, metadata = load_book(book_id)
+    context = load_chapters_up_to(book_directory, metadata, chapter_until)
+
+    return context
