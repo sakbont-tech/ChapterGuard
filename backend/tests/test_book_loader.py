@@ -1,4 +1,4 @@
-from backend.book_loader import load_metadata, validate_metadata, load_chapter, load_chapters_up_to
+from backend.book_loader import *
 import json
 import pytest
 from pathlib import Path
@@ -218,3 +218,46 @@ def test_load_chapters_up_to_with_count_of_monte_cristo():
     assert "Chapter 2. Father and Son" in chapters
     assert "Chapter 3. The Catalans" in chapters
     assert "Chapter 4. Conspiracy" not in chapters
+
+def test_load_book():
+    book_directory, metadata = load_book(
+        "count_of_monte_cristo"
+    )
+
+    expected_directory = (
+        Path(__file__).resolve().parents[1]
+        / "data"
+        / "books"
+        / "count_of_monte_cristo"
+    )
+
+    assert book_directory == expected_directory
+    assert metadata["id"] == "count_of_monte_cristo"
+    assert metadata["title"] == "The Count of Monte Cristo"
+    assert metadata["author"] == "Alexandre Dumas"
+    assert metadata["total_chapters"] == 117
+
+
+def test_load_book_with_unknown_book():
+    with pytest.raises(FileNotFoundError):
+        load_book("book_that_does_not_exist")
+
+
+def test_get_book_context():
+    context = get_book_context(
+        "count_of_monte_cristo",
+        3,
+    )
+
+    assert "Chapter 1. Marseilles—The Arrival" in context
+    assert "Chapter 2. Father and Son" in context
+    assert "Chapter 3. The Catalans" in context
+    assert "Chapter 4. Conspiracy" not in context
+
+
+def test_get_book_context_with_invalid_chapter():
+    with pytest.raises(ValueError):
+        get_book_context(
+            "count_of_monte_cristo",
+            118,
+        )
