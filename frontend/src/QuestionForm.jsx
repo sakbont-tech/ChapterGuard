@@ -87,7 +87,7 @@ function QuestionForm() {
           id="book-title"
           value={bookId}
           onChange={(e) => {
-            setbookId(e.target.value)
+            setBookId(e.target.value)
             setBookChapter('');
           }}
           required
