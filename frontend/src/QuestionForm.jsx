@@ -1,19 +1,43 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import AnswerCard from './AnswerCard';
 import ReadingStatus from './ReadingStatus';
 
 const BASEURL = 'http://localhost:8000/ask';
+const BOOKS_URL = 'http://localhost:8000/books'
 
 function QuestionForm() {
-  const [bookTitle, setBookTitle] = useState('');
+  const [bookId, setBookId] = useState('');
   const [bookChapter, setBookChapter] = useState('');
   const [bookQuestion, setBookQuestion] = useState('');
   const [answer, setAnswer] = useState('');
   const [error, setError] = useState(null);
   const [status, setStatus] = useState('idle');
   const [submittedBook, setSubmittedBook] = useState(null);
+  const [books, setBooks] = useState([]);
 
-  
+  useEffect(() => {
+    async function fetchBooks() {
+      try {
+        const response = await fetch(BOOKS_URL);
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+
+        const data = await response.json();
+        setBooks(data);
+      } catch (error) {
+        setError(error.message);
+        setStatus('Error');
+      }
+  }
+  fetchBooks();
+}, []);
+
+  const selectedBook = books.find(
+  (book) => book.book_id === bookId
+  );
+
   const handleSubmit = async (event) => {
     event.preventDefault();
 
@@ -23,8 +47,8 @@ function QuestionForm() {
 
     const chapterNumber = Number(bookChapter);
     const book = {
-      title: bookTitle, 
-      chapter: chapterNumber,
+      book_id: bookId, 
+      current_chapter: chapterNumber,
       question: bookQuestion,
     };
 
@@ -41,7 +65,7 @@ function QuestionForm() {
 
         const data = await response.json();
         setSubmittedBook(book);
-        setAnswer(data.response);
+        setAnswer(data.answer);
         setStatus("Success");
       }
         catch(error){
@@ -57,28 +81,48 @@ function QuestionForm() {
         <label className="form-label" htmlFor="book-title">
           Book title
         </label>
-        <input
+
+        <select
           className="form-input"
           id="book-title"
-          type="text"
-          value={bookTitle}
-          onChange={(e) => setBookTitle(e.target.value)}
-          placeholder="Enter Book Title"
+          value={bookId}
+          onChange={(e) => {
+            setbookId(e.target.value)
+            setBookChapter('');
+          }}
           required
-        />
-
-        <label className="form-label" htmlFor="book-chapter">
-          Current chapter
-        </label>
-        <input
+        >
+          <option value={""}>Select a book</option>
+          {books.map((book) => {
+            <option key={book.book_id} value={book.book_id}>
+              {book.title}
+            </option>
+          })}
+        </select>
+        <select
           className="form-input"
           id="book-chapter"
-          type="number"
           value={bookChapter}
-          onChange={(e) => setBookChapter(e.target.value)}
-          min="1"
+          onChange={(event) => setBookChapter(event.target.value)}
+          disabled={!selectedBook}
           required
-        />
+        >
+          <option value="">Select a chapter</option>
+
+          {selectedBook &&
+            Array.from(
+              { length: selectedBook.total_chapters },
+              (_, index) => {
+                const chapter = index + 1;
+
+                return (
+                  <option key={chapter} value={chapter}>
+                    Chapter {chapter}
+                  </option>
+                );
+              }
+            )}
+        </select>
 
         <label className="form-label" htmlFor="book-question">
           Question
@@ -100,7 +144,7 @@ function QuestionForm() {
       {status === 'Loading' && <p className='loading-message'> Loading answer...</p>}
       {submittedBook && (
         <ReadingStatus
-          bookTitle={submittedBook.title}
+          bookId={submittedBook.title}
           currentChapter={submittedBook.chapter}
         />
       )}
