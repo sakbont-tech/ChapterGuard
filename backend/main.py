@@ -4,6 +4,7 @@ from backend.schemas import AskRequest, AskResponse
 from backend.database import Request, get_async_session, create_db_and_tables
 from sqlalchemy.ext.asyncio import AsyncSession
 from contextlib import asynccontextmanager
+from backend.book_loader import get_book_context, load_book
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -19,6 +20,10 @@ app.add_middleware(
     allow_headers=["Content-Type"]
 )
 
+SUPPORTED_BOOK_IDS = [
+    "count_of_monte_cristo",
+]
+
 book_requests = {
     1: {
         "title": "Dune",
@@ -29,46 +34,6 @@ book_requests = {
         "title": "Harry Potter and the Philosopher's Stone",
         "chapter": 6,
         "question": "Who is Hagrid?"
-    },
-    3: {
-        "title": "The Hobbit",
-        "chapter": 4,
-        "question": "Why did Bilbo leave home?"
-    },
-    4: {
-        "title": "1984",
-        "chapter": 3,
-        "question": "Who is Big Brother?"
-    },
-    5: {
-        "title": "The Great Gatsby",
-        "chapter": 2,
-        "question": "Who is Nick Carraway?"
-    },
-    6: {
-        "title": "Pride and Prejudice",
-        "chapter": 10,
-        "question": "Why does Elizabeth dislike Mr. Darcy?"
-    },
-    7: {
-        "title": "The Hunger Games",
-        "chapter": 7,
-        "question": "Who is Peeta?"
-    },
-    8: {
-        "title": "The Fellowship of the Ring",
-        "chapter": 5,
-        "question": "What is special about Frodo's ring?"
-    },
-    9: {
-        "title": "Percy Jackson and the Lightning Thief",
-        "chapter": 8,
-        "question": "Who is Percy's father?"
-    },
-    10: {
-        "title": "Frankenstein",
-        "chapter": 12,
-        "question": "Why did Victor create the creature?"
     }
 }
 
@@ -76,24 +41,35 @@ book_requests = {
 def health_check():
     return {"status": "ok"}
 
-@app.get("/ask")
-def get_all_requests():
-    return book_requests
+@app.get("/books")
+def get_books():
+    books = []
 
-@app.get("/ask/{id}")
-def get_request_by_id(id: int) -> AskResponse:
-    return book_requests.get(id)
+    for book_id in SUPPORTED_BOOK_IDS:
+        _, metadata = load_book(book_id)
+
+        books.append({
+            "book_id": metadata["id"],
+            "title": metadata["title"],
+            "total_chapters": metadata["total_chapters"],
+        })
+
+    return books
 
 @app.post("/ask")
-def ask_question(request: AskRequest) -> AskResponse :
+def ask_question(request: AskRequest) -> AskResponse:
     new_request = {
-        "title": request.title,
-        "chapter": request.chapter,
+        "book_id": request.book_id,
+        "current_chapter": request.current_chapter,
         "question": request.question
     }
+    context = get_book_context(new_request["book_id"], new_request["current_chapter"])
     new_id = max(book_requests.keys()) + 1
     book_requests[new_id] = new_request
-    return AskResponse(title=request.title, 
-                       chapter=request.chapter, 
-                       question=request.question, 
-                       response="This is a spoiler free response!")
+    return AskResponse(
+        book_id=request.book_id,
+        current_chapter=request.current_chapter,
+        question=request.question,
+        answer="This is a spoiler free response!"
+    )
+
