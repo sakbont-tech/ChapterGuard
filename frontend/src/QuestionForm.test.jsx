@@ -1,4 +1,4 @@
-import React from 'react';
+﻿import React from 'react';
 import {
   cleanup,
   render,
@@ -17,6 +17,12 @@ import '@testing-library/jest-dom/vitest';
 
 import QuestionForm from './QuestionForm';
 
+const BOOKS_URL = 'http://localhost:8000/books';
+const ASK_URL = 'http://localhost:8000/ask';
+const mockBooks = [
+  { book_id: 'dune', title: 'Dune', total_chapters: 5 },
+];
+
 describe('QuestionForm', () => {
   beforeEach(() => {
     vi.stubGlobal('fetch', vi.fn());
@@ -28,13 +34,28 @@ describe('QuestionForm', () => {
     vi.restoreAllMocks();
   });
 
+  function mockBooksFetch() {
+    fetch.mockImplementation((url) => {
+      if (url === BOOKS_URL) {
+        return Promise.resolve({
+          ok: true,
+          json: vi.fn().mockResolvedValue(mockBooks),
+        });
+      }
+
+      return Promise.reject(new Error(`Unhandled fetch URL: ${url}`));
+    });
+  }
+
   async function fillForm(user) {
-    await user.type(
+    await screen.findByRole('option', { name: 'Dune' });
+
+    await user.selectOptions(
       screen.getByLabelText('Book title'),
-      'Dune',
+      'dune',
     );
 
-    await user.type(
+    await user.selectOptions(
       screen.getByLabelText('Current chapter'),
       '5',
     );
@@ -46,6 +67,8 @@ describe('QuestionForm', () => {
   }
 
   it('renders all inputs', () => {
+    mockBooksFetch();
+
     render(<QuestionForm />);
 
     expect(
@@ -67,6 +90,7 @@ describe('QuestionForm', () => {
 
   it('allows the user to fill in the form', async () => {
     const user = userEvent.setup();
+    mockBooksFetch();
 
     render(<QuestionForm />);
 
@@ -74,11 +98,11 @@ describe('QuestionForm', () => {
 
     expect(
       screen.getByLabelText('Book title'),
-    ).toHaveValue('Dune');
+    ).toHaveValue('dune');
 
     expect(
       screen.getByLabelText('Current chapter'),
-    ).toHaveValue(5);
+    ).toHaveValue('5');
 
     expect(
       screen.getByLabelText('Question'),
@@ -86,6 +110,8 @@ describe('QuestionForm', () => {
   });
 
   it('does not display an answer before submission', () => {
+    mockBooksFetch();
+
     render(<QuestionForm />);
 
     expect(
@@ -97,9 +123,22 @@ describe('QuestionForm', () => {
 
   it('shows loading and disables the button while waiting', async () => {
     const user = userEvent.setup();
+    mockBooksFetch();
 
-    // This Promise never finishes, so the component stays loading.
-    fetch.mockReturnValue(new Promise(() => {}));
+    fetch.mockImplementation((url) => {
+      if (url === BOOKS_URL) {
+        return Promise.resolve({
+          ok: true,
+          json: vi.fn().mockResolvedValue(mockBooks),
+        });
+      }
+
+      if (url === ASK_URL) {
+        return new Promise(() => {});
+      }
+
+      return Promise.reject(new Error(`Unhandled fetch URL: ${url}`));
+    });
 
     render(<QuestionForm />);
 
@@ -120,12 +159,26 @@ describe('QuestionForm', () => {
 
   it('submits the correct request and displays the response', async () => {
     const user = userEvent.setup();
+    mockBooksFetch();
 
-    fetch.mockResolvedValue({
-      ok: true,
-      json: vi.fn().mockResolvedValue({
-        response: 'This is a spoiler free response!',
-      }),
+    fetch.mockImplementation((url) => {
+      if (url === BOOKS_URL) {
+        return Promise.resolve({
+          ok: true,
+          json: vi.fn().mockResolvedValue(mockBooks),
+        });
+      }
+
+      if (url === ASK_URL) {
+        return Promise.resolve({
+          ok: true,
+          json: vi.fn().mockResolvedValue({
+            answer: 'This is a spoiler free response!',
+          }),
+        });
+      }
+
+      return Promise.reject(new Error(`Unhandled fetch URL: ${url}`));
     });
 
     render(<QuestionForm />);
@@ -137,18 +190,18 @@ describe('QuestionForm', () => {
     );
 
     expect(fetch).toHaveBeenCalledWith(
-      'http://localhost:8000/ask',
-      {
+      ASK_URL,
+      expect.objectContaining({
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          title: 'Dune',
-          chapter: 5,
+          book_id: 'dune',
+          current_chapter: 5,
           question: 'Who is Paul?',
         }),
-      },
+      }),
     );
 
     expect(
@@ -164,12 +217,26 @@ describe('QuestionForm', () => {
 
   it('displays the submitted reading status after success', async () => {
     const user = userEvent.setup();
+    mockBooksFetch();
 
-    fetch.mockResolvedValue({
-      ok: true,
-      json: vi.fn().mockResolvedValue({
-        response: 'This is a spoiler free response!',
-      }),
+    fetch.mockImplementation((url) => {
+      if (url === BOOKS_URL) {
+        return Promise.resolve({
+          ok: true,
+          json: vi.fn().mockResolvedValue(mockBooks),
+        });
+      }
+
+      if (url === ASK_URL) {
+        return Promise.resolve({
+          ok: true,
+          json: vi.fn().mockResolvedValue({
+            answer: 'This is a spoiler free response!',
+          }),
+        });
+      }
+
+      return Promise.reject(new Error(`Unhandled fetch URL: ${url}`));
     });
 
     render(<QuestionForm />);
@@ -191,12 +258,25 @@ describe('QuestionForm', () => {
 
   it('displays an HTTP error', async () => {
     const user = userEvent.setup();
-
     vi.spyOn(console, 'log').mockImplementation(() => {});
+    mockBooksFetch();
 
-    fetch.mockResolvedValue({
-      ok: false,
-      status: 500,
+    fetch.mockImplementation((url) => {
+      if (url === BOOKS_URL) {
+        return Promise.resolve({
+          ok: true,
+          json: vi.fn().mockResolvedValue(mockBooks),
+        });
+      }
+
+      if (url === ASK_URL) {
+        return Promise.resolve({
+          ok: false,
+          status: 500,
+        });
+      }
+
+      return Promise.reject(new Error(`Unhandled fetch URL: ${url}`));
     });
 
     render(<QuestionForm />);
@@ -220,12 +300,23 @@ describe('QuestionForm', () => {
 
   it('displays a network error', async () => {
     const user = userEvent.setup();
-
     vi.spyOn(console, 'log').mockImplementation(() => {});
+    mockBooksFetch();
 
-    fetch.mockRejectedValue(
-      new Error('Network error'),
-    );
+    fetch.mockImplementation((url) => {
+      if (url === BOOKS_URL) {
+        return Promise.resolve({
+          ok: true,
+          json: vi.fn().mockResolvedValue(mockBooks),
+        });
+      }
+
+      if (url === ASK_URL) {
+        return Promise.reject(new Error('Network error'));
+      }
+
+      return Promise.reject(new Error(`Unhandled fetch URL: ${url}`));
+    });
 
     render(<QuestionForm />);
 

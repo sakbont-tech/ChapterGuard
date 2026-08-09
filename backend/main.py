@@ -56,7 +56,6 @@ def get_books():
 
     return books
 
-
 @app.post("/ask")
 def ask_question(request: AskRequest) -> AskResponse:
     new_request = {

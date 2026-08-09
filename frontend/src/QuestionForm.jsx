@@ -46,8 +46,11 @@ function QuestionForm() {
     setStatus('Loading');
 
     const chapterNumber = Number(bookChapter);
+    const selectedBookTitle = books.find(
+      (bookOption) => bookOption.book_id === bookId,
+    )?.title;
     const book = {
-      book_id: bookId, 
+      book_id: bookId,
       current_chapter: chapterNumber,
       question: bookQuestion,
     };
@@ -64,7 +67,10 @@ function QuestionForm() {
       }
 
         const data = await response.json();
-        setSubmittedBook(book);
+        setSubmittedBook({
+          ...book,
+          title: selectedBookTitle || '',
+        });
         setAnswer(data.answer);
         setStatus("Success");
       }
@@ -93,12 +99,16 @@ function QuestionForm() {
           required
         >
           <option value={""}>Select a book</option>
-          {books.map((book) => {
+          {books.map((book) => (
             <option key={book.book_id} value={book.book_id}>
               {book.title}
             </option>
-          })}
+          ))}
         </select>
+        <label className="form-label" htmlFor="book-chapter">
+          Current chapter
+        </label>
+
         <select
           className="form-input"
           id="book-chapter"
@@ -144,8 +154,8 @@ function QuestionForm() {
       {status === 'Loading' && <p className='loading-message'> Loading answer...</p>}
       {submittedBook && (
         <ReadingStatus
-          bookId={submittedBook.title}
-          currentChapter={submittedBook.chapter}
+          bookTitle={submittedBook.title}
+          currentChapter={submittedBook.current_chapter}
         />
       )}
       {status === 'Success' && answer && <AnswerCard answer={answer} />}
