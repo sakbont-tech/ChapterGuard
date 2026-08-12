@@ -1,10 +1,16 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from backend.schemas import AskRequest, AskResponse
 from backend.database import Request, get_async_session, create_db_and_tables
 from sqlalchemy.ext.asyncio import AsyncSession
 from contextlib import asynccontextmanager
 from backend.book_loader import get_book_context, load_book
+import os
+from dotenv import load_dotenv
+from google import genai
+
+load_dotenv()
+client = genai.Client()
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -23,19 +29,6 @@ app.add_middleware(
 SUPPORTED_BOOK_IDS = [
     "count_of_monte_cristo",
 ]
-
-book_requests = {
-    1: {
-        "title": "Dune",
-        "chapter": 15,
-        "question": "Who is Paul?"
-    },
-    2: {
-        "title": "Harry Potter and the Philosopher's Stone",
-        "chapter": 6,
-        "question": "Who is Hagrid?"
-    }
-}
 
 @app.get("/health")
 def health_check():
@@ -57,19 +50,37 @@ def get_books():
     return books
 
 @app.post("/ask")
-def ask_question(request: AskRequest) -> AskResponse:
-    new_request = {
-        "book_id": request.book_id,
-        "current_chapter": request.current_chapter,
-        "question": request.question
-    }
-    context = get_book_context(new_request["book_id"], new_request["current_chapter"])
-    new_id = max(book_requests.keys()) + 1
-    book_requests[new_id] = new_request
+async def ask_question(request: AskRequest) -> AskResponse:
+
+    try:
+        context = get_book_context(request.book_id, request.current_chapter)
+
+        system_instruction = (
+            "You are ChapterGuard, a helpful reading assistant. "
+            "You will be provided with the text of a book up to a specific chapter, "
+            "followed by a user's question. You must answer the question using ONLY the provided text. "
+            "Do NOT provide spoilers for anything that happens after the provided text. "
+            "If the answer is not contained in the text provided, say 'I cannot answer that based on the chapters you have read so far.'"
+        )
+        
+        prompt = f"Here is the text up to chapter {request.current_chapter}:\n\n{context}\n\nUser Question: {request.question}"
+
+        ai_response = client.models.generate_content(
+            model='gemini-3.5-flash',
+            contents=prompt,
+            config=genai.types.GenerateContentConfig(
+                system_instruction=system_instruction,
+                temperature=0.3, 
+            ),
+        )
+        answer = ai_response.text
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+    
     return AskResponse(
         book_id=request.book_id,
         current_chapter=request.current_chapter,
         question=request.question,
-        answer="This is a spoiler free response!"
+        answer=answer
     )
-
