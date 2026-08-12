@@ -12,13 +12,14 @@ DATABASE_URL = "sqlite+aiosqlite:///./test.db"
 class Base(DeclarativeBase):
     pass
 
-class Request(Base):
-    __tablename__ = "Requests"
+class Question(Base):
+    __tablename__ = "Questions"
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    title = Column(String, nullable=False)
-    chapter = Column(Integer, nullable=False)
-    question = Column(String, nullable=False)
+    book_id = Column(String, nullable=False)
+    current_chapter = Column(Integer, nullable=False)
+    question = Column(Text, nullable=False)
+    answer = Column(Text, nullable=False)
     created_at = Column(DateTime, default=datetime.utcnow)
 
 engine = create_async_engine(DATABASE_URL)

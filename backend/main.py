@@ -1,8 +1,9 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import Depends, FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from backend.schemas import AskRequest, AskResponse
-from backend.database import Request, get_async_session, create_db_and_tables
+from backend.schemas import AskQuestion, AskResponse
+from backend.database import Question, get_async_session, create_db_and_tables
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import select
 from contextlib import asynccontextmanager
 from backend.book_loader import get_book_context, load_book
 import os
@@ -50,10 +51,10 @@ def get_books():
     return books
 
 @app.post("/ask")
-async def ask_question(request: AskRequest) -> AskResponse:
+async def ask_question(question: AskQuestion, session: AsyncSession = Depends(get_async_session)) -> AskResponse:
 
     try:
-        context = get_book_context(request.book_id, request.current_chapter)
+        context = get_book_context(question.book_id, question.current_chapter)
 
         system_instruction = (
             "You are ChapterGuard, a helpful reading assistant. "
@@ -63,7 +64,7 @@ async def ask_question(request: AskRequest) -> AskResponse:
             "If the answer is not contained in the text provided, say 'I cannot answer that based on the chapters you have read so far.'"
         )
         
-        prompt = f"Here is the text up to chapter {request.current_chapter}:\n\n{context}\n\nUser Question: {request.question}"
+        prompt = f"Here is the text up to chapter {question.current_chapter}:\n\n{context}\n\nUser Question: {question.question}"
 
         ai_response = client.models.generate_content(
             model='gemini-3.5-flash',
@@ -77,10 +78,39 @@ async def ask_question(request: AskRequest) -> AskResponse:
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
-    
-    return AskResponse(
-        book_id=request.book_id,
-        current_chapter=request.current_chapter,
-        question=request.question,
+
+    db_entry = Question(
+        book_id=question.book_id,
+        current_chapter=question.current_chapter,
+        question=question.question,
         answer=answer
     )
+
+    session.add(db_entry)
+    await session.commit()
+    await session.refresh(db_entry)
+
+    return AskResponse(
+        book_id=question.book_id,
+        current_chapter=question.current_chapter,
+        question=question.question,
+        answer=answer
+    )
+
+@app.get("/questions")
+async def get_questions(session: AsyncSession = Depends(get_async_session)):
+    result = await session.execute(select(Question).order_by(Question.created_at.desc()))
+    questions = [row[0] for row in result.all()]
+
+    questions_data = []
+    for question in questions:
+        questions_data.append(
+            {
+                "id": str(question.id),
+                "book_id": question.book_id,
+                "current_chapter": question.current_chapter,
+                "question": question.question,
+                "answer": question.answer
+            }
+        )
+    return {"questions": questions_data}

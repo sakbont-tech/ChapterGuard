@@ -12,7 +12,6 @@ def test_health_check_returns_ok():
     assert response.status_code == 200
     assert response.json() == {"status": "ok"}
 
-# Will fail
 def test_post_ask_returns_response_for_valid_request():
     payload = {
         "book_id": "count_of_monte_cristo",
