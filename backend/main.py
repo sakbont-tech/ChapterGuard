@@ -8,6 +8,7 @@ from contextlib import asynccontextmanager
 from backend.book_loader import get_book_context, load_book
 import os
 from dotenv import load_dotenv
+import logging
 from google import genai
 
 load_dotenv()
@@ -76,10 +77,12 @@ async def ask_question(question: AskQuestion, session: AsyncSession = Depends(ge
         )
         answer = ai_response.text
 
-    except Exception:
-        # If the external AI call fails (e.g. quota, network), fall back to a safe
-        # default answer so tests and offline runs still return 200.
-        answer = "I cannot answer that based on the chapters you have read so far."
+    except Exception as e:
+        # If the external AI call fails (e.g. quota, network), log the error and
+        # surface a 503 to callers so the frontend doesn't show a misleading
+        # answer that claims the content couldn't be found in the book.
+        logging.exception("AI client generate_content failed")
+        raise HTTPException(status_code=503, detail=f"External AI service unavailable: {str(e)}")
 
     db_entry = Question(
         book_id=question.book_id,
