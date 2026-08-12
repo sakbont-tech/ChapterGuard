@@ -30,19 +30,6 @@ SUPPORTED_BOOK_IDS = [
     "count_of_monte_cristo",
 ]
 
-book_requests = {
-    1: {
-        "title": "Dune",
-        "chapter": 15,
-        "question": "Who is Paul?"
-    },
-    2: {
-        "title": "Harry Potter and the Philosopher's Stone",
-        "chapter": 6,
-        "question": "Who is Hagrid?"
-    }
-}
-
 @app.get("/health")
 def health_check():
     return {"status": "ok"}
