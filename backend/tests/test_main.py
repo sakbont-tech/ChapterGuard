@@ -12,13 +12,15 @@ def test_health_check_returns_ok():
     assert response.status_code == 200
     assert response.json() == {"status": "ok"}
 
-# Will fail
 def test_post_ask_returns_response_for_valid_request():
     payload = {
         "book_id": "count_of_monte_cristo",
         "current_chapter": 14,
         "question": "Who is Edmond Dantès?",
     }
+    
+    with TestClient(app) as client:
+        response = client.post("/ask", json=payload)
 
     response = client.post("/ask", json=payload)
 
