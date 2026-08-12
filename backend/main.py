@@ -76,10 +76,8 @@ async def ask_question(question: AskQuestion, session: AsyncSession = Depends(ge
         )
         answer = ai_response.text
 
-    except Exception:
-        # If the external AI call fails (e.g. quota, network), fall back to a safe
-        # default answer so tests and offline runs still return 200.
-        answer = "I cannot answer that based on the chapters you have read so far."
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
     db_entry = Question(
         book_id=question.book_id,

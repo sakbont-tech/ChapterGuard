@@ -22,9 +22,6 @@ def test_post_ask_returns_response_for_valid_request():
     with TestClient(app) as client:
         response = client.post("/ask", json=payload)
 
-    if response.status_code != 200:
-        print("\n=== FASTAPI ERROR ===\n", response.json(), "\n=====================\n")
-        
     assert response.status_code == 200
 
     data = response.json()
