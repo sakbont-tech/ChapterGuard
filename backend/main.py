@@ -66,7 +66,7 @@ async def ask_question(request: AskRequest) -> AskResponse:
         prompt = f"Here is the text up to chapter {request.current_chapter}:\n\n{context}\n\nUser Question: {request.question}"
 
         ai_response = client.models.generate_content(
-            model='gemini-1.5-flash',
+            model='gemini-3.5-flash',
             contents=prompt,
             config=genai.types.GenerateContentConfig(
                 system_instruction=system_instruction,

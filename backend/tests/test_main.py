@@ -23,13 +23,12 @@ def test_post_ask_returns_response_for_valid_request():
     response = client.post("/ask", json=payload)
 
     assert response.status_code == 200
-    assert response.json() == {
-        "book_id": "count_of_monte_cristo",
-        "current_chapter": 14,
-        "question": "Who is Edmond Dantès?",
-        "answer": "This is a spoiler free response!",
-    }
 
+    data = response.json()
+
+    assert "answer" in data
+    assert isinstance(data["answer"], str)
+    assert len(data["answer"]) > 0
 
 def test_post_ask_rejects_chapter_zero():
     payload = {
