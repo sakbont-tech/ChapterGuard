@@ -1,7 +1,7 @@
 from fastapi.testclient import TestClient
-
+from dotenv import load_dotenv
+load_dotenv()
 from backend.main import app
-
 
 client = TestClient(app)
 
