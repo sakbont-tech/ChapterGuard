@@ -1,7 +1,9 @@
+import Markdown from 'react-markdown'
+
 function AnswerCard({ answer }) {
   return (
     <div className="answer-card">
-      <p>{answer}</p>
+      <Markdown>{answer}</Markdown>
     </div>
   );
 }

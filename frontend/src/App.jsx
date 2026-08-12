@@ -3,7 +3,9 @@ import QuestionForm from './QuestionForm';
 function App() {
   return (
     <>
-      <h1>ChapterGuard</h1>
+    <header className="site-header">
+      <h1 className="header-title">ChapterGuard</h1>
+    </header>
       <QuestionForm />
     </>
   );
