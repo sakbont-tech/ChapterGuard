@@ -4,7 +4,6 @@ import ReadingStatus from './ReadingStatus';
 
 const BASEURL = 'http://localhost:8000/ask';
 const BOOKS_URL = 'http://localhost:8000/books'
-const QUESTIONS_URL = 'http://localhost:8000/questions'
 
 function QuestionForm() {
   const [bookId, setBookId] = useState('');
@@ -15,7 +14,6 @@ function QuestionForm() {
   const [status, setStatus] = useState('idle');
   const [submittedBook, setSubmittedBook] = useState(null);
   const [books, setBooks] = useState([]);
-  const [previousQuestions, setPreviousQuestions] = useState([]);
 
   useEffect(() => {
     async function fetchBooks() {
@@ -34,19 +32,6 @@ function QuestionForm() {
       }
   }
   fetchBooks();
-  // fetch previous questions as well
-  async function fetchPreviousQuestions() {
-    try {
-      const resp = await fetch(QUESTIONS_URL);
-      if (!resp.ok) throw new Error(`HTTP error! Status: ${resp.status}`);
-      const data = await resp.json();
-      setPreviousQuestions(data.questions || []);
-    } catch (err) {
-      // don't block UI on questions failure
-      console.warn('Failed to load previous questions', err);
-    }
-  }
-  fetchPreviousQuestions();
 }, []);
 
   const selectedBook = books.find(
@@ -159,43 +144,6 @@ function QuestionForm() {
           onChange={(e) => setBookQuestion(e.target.value)}
           required
         />
-        {/* Inline suggestions: show previous questions matching the user's input */}
-        {bookQuestion && previousQuestions.length > 0 && (
-          (() => {
-            const qLower = bookQuestion.toLowerCase();
-            const suggestions = previousQuestions
-              .filter((q) => q.question && q.question.toLowerCase().includes(qLower))
-              .slice(0, 10);
-
-            if (suggestions.length === 0) return null;
-
-            return (
-              <div className="suggestions" style={{ marginTop: 8 }}>
-                <div className="suggestions-label">Previous questions</div>
-                <ul className="suggestions-list" style={{ listStyle: 'none', padding: 0, margin: 0 }}>
-                  {suggestions.map((s) => (
-                    <li key={s.id} style={{ padding: '6px 8px', cursor: 'pointer' }} onClick={() => {
-                      setBookId(s.book_id);
-                      setBookChapter(String(s.current_chapter));
-                      setBookQuestion(s.question);
-                      setAnswer(s.answer || '');
-                      setSubmittedBook({
-                        book_id: s.book_id,
-                        current_chapter: s.current_chapter,
-                        title: books.find((b) => b.book_id === s.book_id)?.title || '',
-                      });
-                      setStatus('Success');
-                    }}>
-                      <strong>{books.find((b) => b.book_id === s.book_id)?.title || s.book_id}</strong>
-                      {` — Ch ${s.current_chapter}: `}
-                      <span>{s.question}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            );
-          })()
-        )}
 
         <button className="form-button" type="submit" disabled={status === "Loading"}>
           Submit
