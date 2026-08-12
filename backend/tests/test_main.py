@@ -18,11 +18,9 @@ def test_post_ask_returns_response_for_valid_request():
         "current_chapter": 14,
         "question": "Who is Edmond Dantès?",
     }
-    
+
     with TestClient(app) as client:
         response = client.post("/ask", json=payload)
-
-    response = client.post("/ask", json=payload)
 
     assert response.status_code == 200
 
