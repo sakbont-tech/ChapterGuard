@@ -4,6 +4,7 @@ import ReadingStatus from './ReadingStatus';
 
 const BASEURL = 'http://localhost:8000/ask';
 const BOOKS_URL = 'http://localhost:8000/books'
+const QUESTIONS_URL = 'http://localhost:8000/questions'
 
 function QuestionForm() {
   const [bookId, setBookId] = useState('');
@@ -14,6 +15,7 @@ function QuestionForm() {
   const [status, setStatus] = useState('idle');
   const [submittedBook, setSubmittedBook] = useState(null);
   const [books, setBooks] = useState([]);
+  const [previousQuestions, setPreviousQuestions] = useState([]);
 
   useEffect(() => {
     async function fetchBooks() {
@@ -32,6 +34,19 @@ function QuestionForm() {
       }
   }
   fetchBooks();
+  // fetch previous questions as well
+  async function fetchPreviousQuestions() {
+    try {
+      const resp = await fetch(QUESTIONS_URL);
+      if (!resp.ok) throw new Error(`HTTP error! Status: ${resp.status}`);
+      const data = await resp.json();
+      setPreviousQuestions(data.questions || []);
+    } catch (err) {
+      // don't block UI on questions failure
+      console.warn('Failed to load previous questions', err);
+    }
+  }
+  fetchPreviousQuestions();
 }, []);
 
   const selectedBook = books.find(
@@ -137,6 +152,38 @@ function QuestionForm() {
         <label className="form-label" htmlFor="book-question">
           Question
         </label>
+          <label className="form-label" htmlFor="previous-question">
+            Previous questions
+          </label>
+          <select
+            className="form-input"
+            id="previous-question"
+            value={""}
+            onChange={(e) => {
+              const id = e.target.value;
+              if (!id) return;
+              const selected = previousQuestions.find((q) => q.id === id);
+              if (!selected) return;
+              // populate form with selected previous question
+              setBookId(selected.book_id);
+              setBookChapter(String(selected.current_chapter));
+              setBookQuestion(selected.question);
+              setAnswer(selected.answer || '');
+              setSubmittedBook({
+                book_id: selected.book_id,
+                current_chapter: selected.current_chapter,
+                title: books.find((b) => b.book_id === selected.book_id)?.title || '',
+              });
+              setStatus('Success');
+            }}
+          >
+            <option value="">Select a previous question</option>
+            {previousQuestions.map((q) => (
+              <option key={q.id} value={q.id}>
+                {`${books.find((b) => b.book_id === q.book_id)?.title || q.book_id} — Ch ${q.current_chapter}: ${q.question.slice(0,60)}`}
+              </option>
+            ))}
+          </select>
         <textarea
           className="form-textarea"
           id="book-question"
