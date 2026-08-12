@@ -152,38 +152,6 @@ function QuestionForm() {
         <label className="form-label" htmlFor="book-question">
           Question
         </label>
-          <label className="form-label" htmlFor="previous-question">
-            Previous questions
-          </label>
-          <select
-            className="form-input"
-            id="previous-question"
-            value={""}
-            onChange={(e) => {
-              const id = e.target.value;
-              if (!id) return;
-              const selected = previousQuestions.find((q) => q.id === id);
-              if (!selected) return;
-              // populate form with selected previous question
-              setBookId(selected.book_id);
-              setBookChapter(String(selected.current_chapter));
-              setBookQuestion(selected.question);
-              setAnswer(selected.answer || '');
-              setSubmittedBook({
-                book_id: selected.book_id,
-                current_chapter: selected.current_chapter,
-                title: books.find((b) => b.book_id === selected.book_id)?.title || '',
-              });
-              setStatus('Success');
-            }}
-          >
-            <option value="">Select a previous question</option>
-            {previousQuestions.map((q) => (
-              <option key={q.id} value={q.id}>
-                {`${books.find((b) => b.book_id === q.book_id)?.title || q.book_id} — Ch ${q.current_chapter}: ${q.question.slice(0,60)}`}
-              </option>
-            ))}
-          </select>
         <textarea
           className="form-textarea"
           id="book-question"
@@ -191,6 +159,43 @@ function QuestionForm() {
           onChange={(e) => setBookQuestion(e.target.value)}
           required
         />
+        {/* Inline suggestions: show previous questions matching the user's input */}
+        {bookQuestion && previousQuestions.length > 0 && (
+          (() => {
+            const qLower = bookQuestion.toLowerCase();
+            const suggestions = previousQuestions
+              .filter((q) => q.question && q.question.toLowerCase().includes(qLower))
+              .slice(0, 10);
+
+            if (suggestions.length === 0) return null;
+
+            return (
+              <div className="suggestions" style={{ marginTop: 8 }}>
+                <div className="suggestions-label">Previous questions</div>
+                <ul className="suggestions-list" style={{ listStyle: 'none', padding: 0, margin: 0 }}>
+                  {suggestions.map((s) => (
+                    <li key={s.id} style={{ padding: '6px 8px', cursor: 'pointer' }} onClick={() => {
+                      setBookId(s.book_id);
+                      setBookChapter(String(s.current_chapter));
+                      setBookQuestion(s.question);
+                      setAnswer(s.answer || '');
+                      setSubmittedBook({
+                        book_id: s.book_id,
+                        current_chapter: s.current_chapter,
+                        title: books.find((b) => b.book_id === s.book_id)?.title || '',
+                      });
+                      setStatus('Success');
+                    }}>
+                      <strong>{books.find((b) => b.book_id === s.book_id)?.title || s.book_id}</strong>
+                      {` — Ch ${s.current_chapter}: `}
+                      <span>{s.question}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            );
+          })()
+        )}
 
         <button className="form-button" type="submit" disabled={status === "Loading"}>
           Submit
