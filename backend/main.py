@@ -77,6 +77,7 @@ async def ask_question(question: AskQuestion, session: AsyncSession = Depends(ge
         answer = ai_response.text
 
     except Exception as e:
+        print(f"\n=== CRASH DETAILS ===\n{str(e)}\n=====================\n")
         raise HTTPException(status_code=500, detail=str(e))
 
     db_entry = Question(
