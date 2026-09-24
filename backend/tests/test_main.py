@@ -12,7 +12,14 @@ def test_health_check_returns_ok():
     assert response.status_code == 200
     assert response.json() == {"status": "ok"}
 
-def test_post_ask_returns_response_for_valid_request():
+def test_post_ask_returns_response_for_valid_request(mocker):
+    expected_answer = "Edmond Dantès is a young sailor."
+    ai_response = mocker.Mock(text=expected_answer)
+    generate_content = mocker.patch(
+        "backend.main.client.models.generate_content",
+        return_value=ai_response,
+    )
+
     payload = {
         "book_id": "count_of_monte_cristo",
         "current_chapter": 14,
@@ -26,9 +33,8 @@ def test_post_ask_returns_response_for_valid_request():
 
     data = response.json()
 
-    assert "answer" in data
-    assert isinstance(data["answer"], str)
-    assert len(data["answer"]) > 0
+    assert data["answer"] == expected_answer
+    generate_content.assert_called_once()
 
 def test_post_ask_rejects_chapter_zero():
     payload = {
