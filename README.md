@@ -1,34 +1,8 @@
 # ChapterGuard
 
-readme_content = """# ChapterGuard 🛡️📖
-
 **ChapterGuard** is an AI-powered reading companion designed to answer your questions about a book without ever spoiling what happens next.
 
 Ever forgot who a character was in chapter 15, but were too afraid to Google them because the search results would reveal their death in chapter 40? ChapterGuard solves this. By feeding a Large Language Model (LLM) the text of a public domain book _strictly up to your current chapter_, it guarantees that the AI physically does not know the future of the plot, ensuring 100% spoiler-free answers.
-
-## ✨ Features
-
-- **Spoiler-Free AI Responses:** Powered by Google's Gemini 1.5 Flash model, strictly prompted and context-limited to prevent plot leaks.
-- **Smart Context Loading:** Automatically compiles and processes raw book text up to the user's specified chapter.
-- **Persistent Chat History:** Questions and AI answers are securely saved in a local SQLite database, allowing users to view their past inquiries via a UI dropdown.
-- **Modern Stack:** A fast, asynchronous Python backend communicating with a responsive React frontend.
-
-## 🛠️ Tech Stack
-
-**Frontend:**
-
-- React (via Vite)
-- Standard CSS
-
-**Backend:**
-
-- Python 3.x
-- FastAPI (Asynchronous API framework)
-- SQLAlchemy & `aiosqlite` (Async Database ORM)
-- Google GenAI SDK (`gemini-1.5-flash`)
-- Pytest (Automated Testing)
-
----
 
 ## 🚀 Local Development Setup
 
@@ -119,41 +93,6 @@ The frontend will typically run on `http://localhost:5173`. Open this URL in you
 
 ---
 
-## 📁 Project Structure
-
-```
-ChapterGuard/
-├── backend/                    # Python FastAPI backend
-│   ├── main.py                # Application entry point
-│   ├── database.py            # Database configuration & models
-│   ├── book_loader.py         # Book text processing & chapter extraction
-│   ├── schemas.py             # Pydantic request/response models
-│   ├── requirements.txt        # Python dependencies
-│   ├── data/
-│   │   └── books/             # Local book storage
-│   │       └── count_of_monte_cristo/
-│   │           ├── metadata.json
-│   │           ├── raw.txt
-│   │           └── chapters/
-│   └── tests/                 # Pytest test suite
-│
-├── frontend/                   # React + Vite frontend
-│   ├── src/
-│   │   ├── App.jsx            # Main application component
-│   │   ├── QuestionForm.jsx   # Question input component
-│   │   ├── AnswerCard.jsx     # Answer display component
-│   │   ├── ReadingStatus.jsx  # Reading progress component
-│   │   ├── main.jsx           # React entry point
-│   │   └── index.css          # Global styles
-│   ├── package.json           # Node.js dependencies
-│   ├── vite.config.js         # Vite configuration
-│   └── vitest.config.js       # Vitest configuration for unit tests
-│
-└── README.md                  # This file
-```
-
----
-
 ## 🎯 How to Use ChapterGuard
 
 1. **Load a Book:** The application comes pre-configured with "The Count of Monte Cristo". Specify which chapter you're currently reading.
@@ -214,34 +153,6 @@ Vitest runs unit and component tests for React components.
 | `GOOGLE_API_KEY` | Your Google Gemini API key        | `AIzaSyD...`                  |
 | `DATABASE_URL`   | SQLite database connection string | `sqlite:///./chapterguard.db` |
 | `BACKEND_URL`    | Backend server URL (frontend)     | `http://localhost:8000`       |
-
----
-
-## 🐛 Troubleshooting
-
-### Backend Issues
-
-**Problem:** "ModuleNotFoundError: No module named 'fastapi'"
-
-- **Solution:** Ensure you've activated the virtual environment and run `pip install -r requirements.txt`
-
-**Problem:** "GOOGLE_API_KEY not found"
-
-- **Solution:** Create a `.env` file in the `backend` directory with your API key
-
-**Problem:** Database errors on startup
-
-- **Solution:** Delete `chapterguard.db` and restart the server to reinitialize the database
-
-### Frontend Issues
-
-**Problem:** "Cannot find module 'react'"
-
-- **Solution:** Run `npm install` in the frontend directory
-
-**Problem:** Backend requests fail with CORS error
-
-- **Solution:** Ensure the backend is running on `http://localhost:8000`
 
 ---
 
