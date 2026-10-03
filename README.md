@@ -1,176 +1,254 @@
 # ChapterGuard
 
-**ChapterGuard** is an AI-powered reading companion designed to answer your questions about a book without ever spoiling what happens next.
+ChapterGuard is an AI reading companion that answers questions about a book using only the chapters the reader has reached. The application limits the context sent to Google Gemini so that answers are grounded in the selected portion of the story.
 
-Ever forgot who a character was in chapter 15, but were too afraid to Google them because the search results would reveal their death in chapter 40? ChapterGuard solves this. By feeding a Large Language Model (LLM) the text of a public domain book _strictly up to your current chapter_, it guarantees that the AI physically does not know the future of the plot, ensuring 100% spoiler-free answers.
+The current MVP supports **The Count of Monte Cristo** by Alexandre Dumas.
 
-## 🚀 Local Development Setup
+## Features
 
-To run ChapterGuard on your local machine, you will need two terminal windows: one for the Python backend and one for the React frontend.
+- Select the last chapter you have reached
+- Ask questions about characters, events, and details from the story
+- Restrict Gemini's context to Chapters 1 through the selected chapter
+- Render formatted AI responses in a React interface
+- Store previous questions and answers in SQLite
+- Retrieve question history through the backend API
+- Test backend and frontend behaviour with Pytest, Vitest, and React Testing Library
+- Run automated tests with GitHub Actions
+
+## How it works
+
+1. The included public domain text is split into 117 chapter files.
+2. The React frontend retrieves the supported book and chapter count from FastAPI.
+3. The reader selects a chapter and submits a question.
+4. The backend loads the text from Chapter 1 through the selected chapter.
+5. That text and the question are sent to Gemini with spoiler prevention instructions.
+6. The answer is returned to the frontend and the exchange is saved in SQLite.
+
+ChapterGuard reduces spoiler exposure by withholding later chapter text from the model. Model responses can still be imperfect, so this should be treated as a reading aid rather than a guarantee.
+
+## Technology
+
+| Area | Technology |
+| --- | --- |
+| Backend | Python, FastAPI |
+| Frontend | React, Vite, JavaScript |
+| AI | Google Gemini API |
+| Database | SQLite, SQLAlchemy |
+| Backend testing | Pytest, FastAPI TestClient |
+| Frontend testing | Vitest, React Testing Library |
+| Automation | GitHub Actions |
+
+## Project structure
+
+```text
+ChapterGuard/
+├── backend/
+│   ├── data/books/              # Book metadata and source text
+│   ├── scripts/split_book.py    # Generates individual chapter files
+│   ├── tests/                   # Backend tests
+│   ├── book_loader.py           # Loads metadata and chapter context
+│   ├── database.py              # SQLAlchemy models and async sessions
+│   ├── main.py                  # FastAPI application and routes
+│   └── schemas.py               # Request and response models
+├── frontend/
+│   └── src/                     # React components and tests
+└── .github/workflows/tests.yml  # Continuous integration
+```
+
+## Local setup
 
 ### Prerequisites
 
-- [Node.js](https://nodejs.org/) installed for the frontend.
-- [Python 3.10+](https://www.python.org/) installed for the backend.
-- A free [Google Gemini API Key](https://aistudio.google.com/).
+- Python 3.12 or a compatible Python 3 version
+- Node.js 24 or a compatible modern Node.js version
+- A [Google Gemini API key](https://aistudio.google.com/)
 
-### 1. Backend Setup
-
-Open your terminal and navigate to the root directory of the project, then into the backend folder:
+### 1. Clone the repository
 
 ```bash
-cd backend
+git clone https://github.com/sakbont-tech/ChapterGuard.git
+cd ChapterGuard
 ```
 
-#### Create a Virtual Environment
+### 2. Set up the backend
 
-Create and activate a Python virtual environment:
+Create and activate a virtual environment:
 
 ```bash
-# Windows
-python -m venv env
-env\Scripts\activate
-
-# macOS/Linux
-python3 -m venv env
-source env/bin/activate
+python -m venv .venv
 ```
 
-#### Install Dependencies
+Windows PowerShell:
 
-Install the required Python packages:
+```powershell
+.\.venv\Scripts\Activate.ps1
+```
+
+macOS or Linux:
 
 ```bash
-pip install -r requirements.txt
+source .venv/bin/activate
 ```
 
-#### Environment Configuration
-
-Create a `.env` file in the `backend` directory with the following variables:
-
-```
-GOOGLE_API_KEY=your_gemini_api_key_here
-DATABASE_URL=sqlite:///./chapterguard.db
-```
-
-Replace `your_gemini_api_key_here` with your actual Google Gemini API key.
-
-#### Run the Backend Server
-
-Start the FastAPI server:
+Install the Python dependencies:
 
 ```bash
-python main.py
+python -m pip install -r backend/requirements.txt
 ```
 
-The backend will run on `http://localhost:8000`. You can view the interactive API documentation at `http://localhost:8000/docs`.
+Create a `.env` file in the repository root:
 
-### 2. Frontend Setup
+```env
+GEMINI_API_KEY=your_gemini_api_key
+```
 
-In a new terminal, navigate to the frontend directory:
+Generate the chapter files from the included public domain source text:
+
+```bash
+python backend/scripts/split_book.py
+```
+
+The generated chapter files are intentionally excluded from Git because they can be reproduced from `raw.txt`.
+
+Start the backend from the repository root:
+
+```bash
+python -m uvicorn backend.main:app --reload
+```
+
+The API runs at [http://localhost:8000](http://localhost:8000), with interactive documentation at [http://localhost:8000/docs](http://localhost:8000/docs).
+
+### 3. Set up the frontend
+
+Open another terminal:
 
 ```bash
 cd frontend
-```
-
-#### Install Dependencies
-
-Install Node.js dependencies:
-
-```bash
 npm install
-```
-
-#### Run the Development Server
-
-Start the Vite development server:
-
-```bash
 npm run dev
 ```
 
-The frontend will typically run on `http://localhost:5173`. Open this URL in your browser.
+Open the URL displayed by Vite, normally [http://localhost:5173](http://localhost:5173).
 
----
+## Using ChapterGuard
 
-## 🎯 How to Use ChapterGuard
+1. Select **The Count of Monte Cristo**.
+2. Select the last chapter you have read.
+3. Enter a question about the story.
+4. Submit the form and wait for the Gemini response.
 
-1. **Load a Book:** The application comes pre-configured with "The Count of Monte Cristo". Specify which chapter you're currently reading.
-2. **Ask Questions:** Type any question about the book in the question form.
-3. **Get Spoiler-Free Answers:** The AI will answer based only on the chapters you've read.
-4. **View History:** Access your past questions and answers from the chat history dropdown.
+The selected chapter is included in the allowed context. Selecting Chapter 14 gives Gemini access to Chapters 1 through 14.
 
----
+## API
 
-## 🔌 API Endpoints
+### Health check
 
-The backend provides the following REST API endpoints:
-
-### Questions
-
-- `POST /api/ask` - Submit a question about the current book
-  - **Body:** `{ "question": "string", "book_id": "string", "chapter": "number" }`
-  - **Response:** `{ "answer": "string", "history_id": "number" }`
-
-- `GET /api/history/{book_id}` - Get chat history for a book
-  - **Response:** List of past questions and answers
-
-### Books
-
-- `GET /api/books` - Get available books
-- `GET /api/books/{book_id}/chapters` - Get chapter list and metadata
-
----
-
-## 🧪 Testing
-
-Run the test suite to ensure everything is working correctly:
-
-### Backend Tests
-
-```bash
-cd backend
-pytest
+```http
+GET /health
 ```
 
-Pytest automatically discovers and runs all tests in the `tests/` directory.
+Response:
 
-### Frontend Tests
+```json
+{
+  "status": "ok"
+}
+```
+
+### List supported books
+
+```http
+GET /books
+```
+
+Response:
+
+```json
+[
+  {
+    "book_id": "count_of_monte_cristo",
+    "title": "The Count of Monte Cristo",
+    "total_chapters": 117
+  }
+]
+```
+
+### Ask a question
+
+```http
+POST /ask
+Content-Type: application/json
+```
+
+Request:
+
+```json
+{
+  "book_id": "count_of_monte_cristo",
+  "current_chapter": 14,
+  "question": "Who is Edmond Dantès?"
+}
+```
+
+Response:
+
+```json
+{
+  "book_id": "count_of_monte_cristo",
+  "current_chapter": 14,
+  "question": "Who is Edmond Dantès?",
+  "answer": "..."
+}
+```
+
+### Retrieve question history
+
+```http
+GET /questions
+```
+
+Response:
+
+```json
+{
+  "questions": [
+    {
+      "id": "...",
+      "book_id": "count_of_monte_cristo",
+      "current_chapter": 14,
+      "question": "Who is Edmond Dantès?",
+      "answer": "..."
+    }
+  ]
+}
+```
+
+## Testing
+
+Generate the chapters before running the backend suite:
+
+```bash
+python backend/scripts/split_book.py
+python -m pytest -q
+```
+
+Run the frontend suite:
 
 ```bash
 cd frontend
-npm run test
+npm run test -- --run
 ```
 
-Vitest runs unit and component tests for React components.
+GitHub Actions runs both suites for pushes and pull requests targeting `main`.
 
----
+## Current scope
 
-## 🔑 Environment Variables Reference
+ChapterGuard is a completed single-book MVP. It currently:
 
-| Variable         | Description                       | Example                       |
-| ---------------- | --------------------------------- | ----------------------------- |
-| `GOOGLE_API_KEY` | Your Google Gemini API key        | `AIzaSyD...`                  |
-| `DATABASE_URL`   | SQLite database connection string | `sqlite:///./chapterguard.db` |
-| `BACKEND_URL`    | Backend server URL (frontend)     | `http://localhost:8000`       |
+- Supports The Count of Monte Cristo
+- Uses locally generated text files for chapter content
+- Stores question history in a local SQLite database
+- Runs as a local development application
+- Has no user accounts or cloud deployment
 
----
-
-## 📝 Adding New Books
-
-To add a new book to ChapterGuard:
-
-1. Create a new folder under `backend/data/books/{book_name}/`
-2. Add the raw book text as `raw.txt`
-3. Create a `metadata.json` file with book information:
-   ```json
-   {
-     "title": "Book Title",
-     "author": "Author Name",
-     "total_chapters": 50,
-     "description": "Book description"
-   }
-   ```
-4. Run the `scripts/split_book.py` script to generate chapter files
-
-**Happy reading with ChapterGuard! 🛡️📖**
+The source text is from [Project Gutenberg](https://www.gutenberg.org/ebooks/1184).
